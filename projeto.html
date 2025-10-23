@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciamento do Projeto</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="top">
+        <img id="profile" src="https://i.pravatar.cc/150?img=12" alt="Foto de usuário">    
+    </div>
+
+    <h1 id="titulo">Carregando projeto...</h1>
+
+    <!-- === Seção de tarefas e prazos === -->
+    <div class="section">
+        <h2>Tarefas e Prazos</h2>
+        <form id="task-form">
+            <label for="task-name">Nome da tarefa:</label>
+            <input type="text" id="task-name" required>
+
+            <label for="deadline">Prazo:</label>
+            <input type="date" id="deadline" required>
+
+            <label for="priority">Prioridade:</label>
+            <select id="priority" required>
+                <option value="Alta">Alta</option>
+                <option value="Média">Média</option>
+                <option value="Baixa">Baixa</option>
+            </select>
+
+            <button type="submit">Adicionar tarefa</button>
+        </form>
+
+        <div id="tasks"></div>
+    </div>
+
+    <!-- === Painel de progresso === -->
+    <div class="section">
+        <h2>Progresso do Projeto</h2>
+        <p>Concluído: <span id="progress-text">0%</span></p>
+        <div id="progress-bar">
+            <div id="progress"></div>
+        </div>
+    </div>
+
+    <!-- === Notificações === -->
+    <div class="section">
+        <h2>Notificações</h2>
+        <div id="notifications"></div>
+    </div>
+
+    <script>
+        // === TÍTULO DO PROJETO ===
+        const params = new URLSearchParams(window.location.search);
+        const nomeProjeto = params.get('nome');
+        const titulo = document.getElementById('titulo');
+
+        if (nomeProjeto) {
+            titulo.textContent = `Gerenciando o Projeto: ${nomeProjeto}`;
+        } else {
+            titulo.textContent = 'Projeto não encontrado.';
+        }
+
+        // === VARIÁVEIS ===
+        const taskForm = document.getElementById('task-form');
+        const tasksContainer = document.getElementById('tasks');
+        const progressBar = document.getElementById('progress');
+        const progressText = document.getElementById('progress-text');
+        const notifications = document.getElementById('notifications');
+
+        let tasks = [];
+
+        // === ADICIONAR TAREFA ===
+        taskForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('task-name').value.trim();
+            const deadline = document.getElementById('deadline').value;
+            const priority = document.getElementById('priority').value;
+
+            if (!name || !deadline) return;
+
+            const task = {
+                name,
+                deadline,
+                priority,
+                completed: false
+            };
+
+            tasks.push(task);
+            renderTasks();
+            taskForm.reset();
+        });
+
+        // === RENDERIZAR LISTA DE TAREFAS ===
+        function renderTasks() {
+            tasksContainer.innerHTML = '';
+            const today = new Date();
+
+            tasks.forEach((task, index) => {
+                const taskEl = document.createElement('div');
+                taskEl.classList.add('task');
+
+                const info = document.createElement('div');
+                info.innerHTML = `<strong>${task.name}</strong><br>
+                                  Prazo: ${task.deadline}<br>
+                                  Prioridade: ${task.priority}`;
+                info.style.color = task.completed ? "#4caf50" : "#0d47a1";
+                info.style.textDecoration = task.completed ? "line-through" : "none";
+
+                const actions = document.createElement('div');
+                const completeBtn = document.createElement('button');
+                completeBtn.textContent = task.completed ? "✔ Concluída" : "Marcar concluída";
+                completeBtn.style.background = task.completed ? "#4caf50" : "#1565c0";
+                completeBtn.addEventListener('click', () => {
+                    tasks[index].completed = !tasks[index].completed;
+                    renderTasks();
+                });
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = "Excluir";
+                deleteBtn.style.background = "#ef5350";
+                deleteBtn.addEventListener('click', () => {
+                    tasks.splice(index, 1);
+                    renderTasks();
+                });
+
+                actions.appendChild(completeBtn);
+                actions.appendChild(deleteBtn);
+
+                taskEl.appendChild(info);
+                taskEl.appendChild(actions);
+                tasksContainer.appendChild(taskEl);
+
+                // Verificar prazos próximos
+                const deadlineDate = new Date(task.deadline);
+                const diffDays = (deadlineDate - today) / (1000 * 60 * 60 * 24);
+
+                if (!task.completed && diffDays <= 2 && diffDays > 0) {
+                    showNotification(`⚠️ Tarefa "${task.name}" com prazo próximo (${task.deadline})!`);
+                } else if (!task.completed && diffDays <= 0) {
+                    showNotification(`⏰ Tarefa "${task.name}" está atrasada!`);
+                }
+            });
+
+            updateProgress();
+        }
+
+        // === ATUALIZAR PROGRESSO ===
+        function updateProgress() {
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed).length;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            progressBar.style.width = percent + "%";
+            progressText.textContent = percent + "%";
+        }
+
+        // === NOTIFICAÇÕES ===
+        function showNotification(message) {
+            const note = document.createElement('div');
+            note.classList.add('notification');
+            note.textContent = message;
+
+            notifications.appendChild(note);
+            setTimeout(() => note.remove(), 8000);
+        }
+    </script>
+</body>
+</html>
