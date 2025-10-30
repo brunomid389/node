@@ -12,7 +12,6 @@
 
     <h1 id="titulo">Carregando projeto...</h1>
 
-    <!-- === Seção de tarefas e prazos === -->
     <div class="section">
         <h2>Tarefas e Prazos</h2>
         <form id="task-form">
@@ -35,7 +34,6 @@
         <div id="tasks"></div>
     </div>
 
-    <!-- === Painel de progresso === -->
     <div class="section">
         <h2>Progresso do Projeto</h2>
         <p>Concluído: <span id="progress-text">0%</span></p>
@@ -44,14 +42,12 @@
         </div>
     </div>
 
-    <!-- === Notificações === -->
     <div class="section">
         <h2>Notificações</h2>
         <div id="notifications"></div>
     </div>
 
     <script>
-        // === TÍTULO DO PROJETO ===
         const params = new URLSearchParams(window.location.search);
         const nomeProjeto = params.get('nome');
         const titulo = document.getElementById('titulo');
@@ -62,7 +58,6 @@
             titulo.textContent = 'Projeto não encontrado.';
         }
 
-        // === VARIÁVEIS ===
         const taskForm = document.getElementById('task-form');
         const tasksContainer = document.getElementById('tasks');
         const progressBar = document.getElementById('progress');
@@ -71,7 +66,6 @@
 
         let tasks = [];
 
-        // === ADICIONAR TAREFA ===
         taskForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const name = document.getElementById('task-name').value.trim();
@@ -92,7 +86,6 @@
             taskForm.reset();
         });
 
-        // === RENDERIZAR LISTA DE TAREFAS ===
         function renderTasks() {
             tasksContainer.innerHTML = '';
             const today = new Date();
@@ -132,7 +125,6 @@
                 taskEl.appendChild(actions);
                 tasksContainer.appendChild(taskEl);
 
-                // Verificar prazos próximos
                 const deadlineDate = new Date(task.deadline);
                 const diffDays = (deadlineDate - today) / (1000 * 60 * 60 * 24);
 
@@ -146,7 +138,6 @@
             updateProgress();
         }
 
-        // === ATUALIZAR PROGRESSO ===
         function updateProgress() {
             const total = tasks.length;
             const completed = tasks.filter(t => t.completed).length;
@@ -156,7 +147,6 @@
             progressText.textContent = percent + "%";
         }
 
-        // === NOTIFICAÇÕES ===
         function showNotification(message) {
             const note = document.createElement('div');
             note.classList.add('notification');
@@ -168,3 +158,4 @@
     </script>
 </body>
 </html>
+
